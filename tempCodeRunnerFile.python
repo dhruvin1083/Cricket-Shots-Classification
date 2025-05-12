@@ -1,0 +1,154 @@
+// src/App.jsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
+import CreateTeam from './pages/CreateTeam';
+import JoinTeam from './pages/JoinTeam';
+import TeamDashboard from './pages/TeamDashboard';
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/create" element={<CreateTeam />} />
+        <Route path="/join" element={<JoinTeam />} />
+        <Route path="/team/:teamId" element={<TeamDashboard />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
+
+
+// src/pages/LandingPage.jsx
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const LandingPage = () => {
+  return (
+    <div className="flex flex-col items-center justify-center h-screen text-center p-6 bg-gradient-to-r from-green-400 to-blue-500">
+      <h1 className="text-4xl font-bold text-white mb-6">Welcome to Cricket Team Hub</h1>
+      <div className="space-x-4">
+        <Link to="/create" className="bg-white text-blue-600 px-4 py-2 rounded-xl shadow-xl font-semibold">Create Team</Link>
+        <Link to="/join" className="bg-white text-green-600 px-4 py-2 rounded-xl shadow-xl font-semibold">Join Team</Link>
+      </div>
+    </div>
+  );
+};
+
+export default LandingPage;
+
+
+// src/pages/CreateTeam.jsx
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const CreateTeam = () => {
+  const [teamName, setTeamName] = useState('');
+  const navigate = useNavigate();
+
+  const handleCreate = () => {
+    const teamId = Date.now().toString();
+    localStorage.setItem(teamId, JSON.stringify({ name: teamName, players: [] }));
+    navigate(`/team/${teamId}`);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      <h2 className="text-2xl font-bold mb-4">Create a New Team</h2>
+      <input
+        type="text"
+        placeholder="Team Name"
+        value={teamName}
+        onChange={(e) => setTeamName(e.target.value)}
+        className="border p-2 rounded mb-4"
+      />
+      <button
+        onClick={handleCreate}
+        className="bg-blue-500 text-white px-4 py-2 rounded-xl shadow-lg"
+      >
+        Create Team
+      </button>
+    </div>
+  );
+};
+
+export default CreateTeam;
+
+
+// src/pages/JoinTeam.jsx
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const JoinTeam = () => {
+  const [teamId, setTeamId] = useState('');
+  const [playerName, setPlayerName] = useState('');
+  const navigate = useNavigate();
+
+  const handleJoin = () => {
+    const team = JSON.parse(localStorage.getItem(teamId));
+    if (team) {
+      team.players.push(playerName);
+      localStorage.setItem(teamId, JSON.stringify(team));
+      navigate(`/team/${teamId}`);
+    } else {
+      alert('Team not found');
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      <h2 className="text-2xl font-bold mb-4">Join a Team</h2>
+      <input
+        type="text"
+        placeholder="Team ID"
+        value={teamId}
+        onChange={(e) => setTeamId(e.target.value)}
+        className="border p-2 rounded mb-2"
+      />
+      <input
+        type="text"
+        placeholder="Your Name"
+        value={playerName}
+        onChange={(e) => setPlayerName(e.target.value)}
+        className="border p-2 rounded mb-4"
+      />
+      <button
+        onClick={handleJoin}
+        className="bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg"
+      >
+        Join Team
+      </button>
+    </div>
+  );
+};
+
+export default JoinTeam;
+
+
+// src/pages/TeamDashboard.jsx
+import React from 'react';
+import { useParams } from 'react-router-dom';
+
+const TeamDashboard = () => {
+  const { teamId } = useParams();
+  const team = JSON.parse(localStorage.getItem(teamId));
+
+  if (!team) return <div className="p-6">Team not found</div>;
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <h2 className="text-3xl font-bold mb-4">Team: {team.name}</h2>
+      <h3 className="text-xl font-semibold mb-2">Players:</h3>
+      <ul className="list-disc ml-6">
+        {team.players.map((player, index) => (
+          <li key={index} className="text-lg">{player}</li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default TeamDashboard;
